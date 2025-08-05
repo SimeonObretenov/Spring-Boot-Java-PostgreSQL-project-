@@ -1,0 +1,4 @@
+com\example\demo\DemoController.class
+com\example\demo\Person.class
+com\example\demo\DemoApplication.class
+com\example\demo\PersonRepository.class
