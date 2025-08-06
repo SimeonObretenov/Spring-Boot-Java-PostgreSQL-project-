@@ -1,6 +1,7 @@
 package com.example.demo.Service.AccountWork;
 
 import com.example.demo.Entity.Person;
+import com.example.demo.Interfaces.AccountWork.JwtInterface;
 import com.example.demo.Interfaces.AccountWork.LoginInterface;
 import com.example.demo.Repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class LoginService implements LoginInterface {
 
     private final PersonRepository repo;
-    private final JwtService jwtService;
+    private final JwtInterface jwtService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -25,8 +26,7 @@ public class LoginService implements LoginInterface {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        return jwtService.generateToken(username);
-
+        return jwtService.generateToken(person.getUsername());
     }
 }
 

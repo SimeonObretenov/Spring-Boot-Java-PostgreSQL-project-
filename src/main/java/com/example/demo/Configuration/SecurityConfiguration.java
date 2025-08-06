@@ -1,10 +1,8 @@
 package com.example.demo.Configuration;
 
+import com.example.demo.Entity.Person;
+import com.example.demo.Repository.PersonRepository;
 import com.example.demo.Service.AccountWork.JwtService;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +30,7 @@ import java.util.Collections;
 public class SecurityConfiguration {
 
     private final JwtService jwtService;
+    private final PersonRepository personRepository;
 
     @Bean
     public SecurityFilterChain customSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -48,7 +47,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.PUT, "/deactivate", "/reactivate", "/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthFilter(jwtService, personRepository), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -60,9 +59,11 @@ public class SecurityConfiguration {
     static class JwtAuthFilter extends OncePerRequestFilter {
 
         private final JwtService jwtService;
+        private final PersonRepository personRepository;
 
-        public JwtAuthFilter(JwtService jwtService) {
+        public JwtAuthFilter(JwtService jwtService, PersonRepository personRepository) {
             this.jwtService = jwtService;
+            this.personRepository = personRepository;
         }
 
         @Override
@@ -70,13 +71,22 @@ public class SecurityConfiguration {
                                         HttpServletResponse response,
                                         FilterChain filterChain) throws ServletException, IOException {
             String authHeader = request.getHeader("Authorization");
+
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
                 String username = jwtService.extractUsername(token);
+
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    Person person = personRepository.findByUsername(username);
+                    if (person != null && person.isActive()) {
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        person,
+                                        null,
+                                        Collections.emptyList()
+                                );
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
             }
             filterChain.doFilter(request, response);

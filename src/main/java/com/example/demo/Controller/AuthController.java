@@ -4,6 +4,10 @@ import com.example.demo.Dto.LoginRequest;
 import com.example.demo.Dto.RegisterRequest;
 import com.example.demo.Dto.ResetPasswordRequest;
 import com.example.demo.Entity.Person;
+import com.example.demo.Interfaces.AccountWork.AccountStatusInterface;
+import com.example.demo.Interfaces.AccountWork.LoginInterface;
+import com.example.demo.Interfaces.AccountWork.RegisterInterface;
+import com.example.demo.Interfaces.AccountWork.ResetPasswordInterface;
 import com.example.demo.Service.AccountWork.AccountStatusService;
 import com.example.demo.Service.AccountWork.LoginService;
 import com.example.demo.Service.AccountWork.RegisterService;
@@ -16,10 +20,10 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final LoginService loginService;
-    private final AccountStatusService accountStatusService;
-    private final ResetPasswordService resetPasswordService;
-    private final RegisterService registerService;
+    private final LoginInterface loginService;
+    private final AccountStatusInterface accountStatusService;
+    private final ResetPasswordInterface resetPasswordService;
+    private final RegisterInterface registerService;
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
@@ -39,14 +43,14 @@ public class AuthController {
     }
 
     @PutMapping("/deactivate")
-    public ResponseEntity<String> deactivate(@RequestParam String username) {
-        accountStatusService.deactivate(username);
+    public ResponseEntity<String> deactivate(@RequestParam String username, @RequestParam String password) {
+        accountStatusService.deactivate(username, password);
         return ResponseEntity.ok("User deactivated successfully");
     }
 
     @PutMapping("/reactivate")
-    public ResponseEntity<String> reactivate(@RequestParam String username) {
-        accountStatusService.reactivate(username);
+    public ResponseEntity<String> reactivate(@RequestParam String username,  @RequestParam String password) {
+        accountStatusService.reactivate(username, password);
         return ResponseEntity.ok("User reactivated successfully");
     }
 
