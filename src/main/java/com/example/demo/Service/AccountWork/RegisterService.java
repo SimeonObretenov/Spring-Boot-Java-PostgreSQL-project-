@@ -1,6 +1,7 @@
 package com.example.demo.Service.AccountWork;
 
 import com.example.demo.Entity.Person;
+import com.example.demo.Entity.Role;
 import com.example.demo.Interfaces.AccountWork.RegisterInterface;
 import com.example.demo.Repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class RegisterService implements RegisterInterface {
     @Override
     public void register(Person person) {
         person.setPassword(passwordEncoder.encode(person.getPassword()));
+        person.setRole(Role.USER);
         repo.save(person);
     }
 }

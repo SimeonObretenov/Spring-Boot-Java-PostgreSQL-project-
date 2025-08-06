@@ -14,8 +14,8 @@ public class Person {
     private String password;
     private boolean active = true;
 
-//    @Enumerated(EnumType.STRING)
-//    private Role role = Role.USER;
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 
 
     public Long getId() { return id; }
@@ -33,6 +33,6 @@ public class Person {
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
 
-//    public Role getRole() { return role; }
-//    public void setRole(Role role) { this.role = role; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 }
