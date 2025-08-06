@@ -17,6 +17,6 @@ public class FindNameService implements FindNameInterface {
     public String getString(String name) {
         Person person = repo.findByName(name);
         if (person == null) { throw new ResponseStatusException(HttpStatus.FORBIDDEN); }
-        return "Hello, " + person.getName() + "! User:  " + person.getUsername() ;
+        return "Hello, " + person.getName() + "! User:  " + person.getUsername() + " Role: " + person.getRole();
     }
 }
