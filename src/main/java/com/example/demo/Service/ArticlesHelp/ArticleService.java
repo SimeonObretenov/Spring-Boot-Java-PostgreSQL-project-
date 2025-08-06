@@ -80,4 +80,44 @@ public class ArticleService implements ArticleInterface {
         }
     }
 
+    @Override
+    public ArticleResponse updateArticle(Long articleId, ArticleCreateRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Person currentUser = (Person) auth.getPrincipal();
+
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Article not found"));
+
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+        boolean isAuthor = article.getAuthor().getId().equals(currentUser.getId());
+
+        if (!isAdmin && !isAuthor) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to edit this article");
+        }
+
+        Category category = categoryRepository.findCategoryById(request.getCategoryId());
+        if (category == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found");
+        }
+        article.setCategory(category);
+
+        Set<Tag> tags = (request.getTagIds() != null && !request.getTagIds().isEmpty())
+                ? tagRepository.findByIdIn(request.getTagIds())
+                : new HashSet<>();
+        article.setTags(tags);
+
+        article.setTitle(request.getTitle());
+        article.setContent(request.getContent());
+
+        Article saved = articleRepository.save(article);
+
+        return new ArticleResponse(
+                saved.getId(),
+                saved.getTitle(),
+                saved.getContent(),
+                saved.getCategory().getName(),
+                saved.getAuthor().getName(),
+                saved.getTags().stream().map(Tag::getName).collect(Collectors.toSet())
+        );
+    }
 }

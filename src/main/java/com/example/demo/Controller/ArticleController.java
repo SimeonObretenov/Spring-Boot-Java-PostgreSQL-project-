@@ -26,4 +26,13 @@ public class ArticleController {
         articleService.deleteArticle(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/articles/{id}")
+    public ResponseEntity<ArticleResponse> updateArticle(
+            @PathVariable Long id,
+            @RequestBody ArticleCreateRequest request) {
+        ArticleResponse updated = articleService.updateArticle(id, request);
+        return ResponseEntity.ok(updated);
+    }
+
 }
