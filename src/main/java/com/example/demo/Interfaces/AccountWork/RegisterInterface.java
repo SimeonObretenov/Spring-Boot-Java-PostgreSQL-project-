@@ -1,4 +1,4 @@
-package com.example.demo.Interfaces;
+package com.example.demo.Interfaces.AccountWork;
 
 import com.example.demo.Entity.Person;
 

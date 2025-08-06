@@ -1,6 +1,4 @@
-package com.example.demo.Interfaces;
-
-import com.example.demo.Entity.Role;
+package com.example.demo.Interfaces.AccountWork;
 
 public interface JwtInterface {
     String generateToken(String username);

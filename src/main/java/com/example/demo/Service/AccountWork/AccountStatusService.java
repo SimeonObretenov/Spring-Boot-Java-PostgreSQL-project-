@@ -1,7 +1,7 @@
-package com.example.demo.Service;
+package com.example.demo.Service.AccountWork;
 
 import com.example.demo.Entity.Person;
-import com.example.demo.Interfaces.AccountStatusInterface;
+import com.example.demo.Interfaces.AccountWork.AccountStatusInterface;
 import com.example.demo.Repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

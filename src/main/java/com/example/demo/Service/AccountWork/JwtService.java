@@ -1,6 +1,6 @@
-package com.example.demo.Service;
+package com.example.demo.Service.AccountWork;
 
-import com.example.demo.Interfaces.JwtInterface;
+import com.example.demo.Interfaces.AccountWork.JwtInterface;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
