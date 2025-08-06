@@ -2,10 +2,7 @@ package com.example.demo.Service.ArticlesHelp;
 
 import com.example.demo.Dto.ArticleCreateRequest;
 import com.example.demo.Dto.ArticleResponse;
-import com.example.demo.Entity.Article;
-import com.example.demo.Entity.Category;
-import com.example.demo.Entity.Person;
-import com.example.demo.Entity.Tag;
+import com.example.demo.Entity.*;
 import com.example.demo.Interfaces.ArticlesHelp.ArticleInterface;
 import com.example.demo.Repository.ArticleRepository;
 import com.example.demo.Repository.CategoryRepository;
@@ -64,4 +61,23 @@ public class ArticleService implements ArticleInterface {
                 saved.getTags().stream().map(Tag::getName).collect(Collectors.toSet())
         );
     }
+
+    @Override
+    public void deleteArticle(Long articleId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Person currentUser = (Person) auth.getPrincipal();
+
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Article not found"));
+
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+        boolean isAuthor = article.getAuthor().getId().equals(currentUser.getId());
+
+        if (isAdmin || isAuthor) {
+            articleRepository.delete(article);
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this article");
+        }
+    }
+
 }

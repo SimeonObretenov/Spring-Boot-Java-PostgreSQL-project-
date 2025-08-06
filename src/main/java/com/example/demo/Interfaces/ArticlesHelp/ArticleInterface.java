@@ -7,4 +7,5 @@ import java.util.Set;
 
 public interface ArticleInterface {
     ArticleResponse createArticle(ArticleCreateRequest request);
+    void deleteArticle(Long articleId);
 }
