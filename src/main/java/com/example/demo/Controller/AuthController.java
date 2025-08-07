@@ -16,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
@@ -26,10 +29,11 @@ public class AuthController {
     private final RegisterInterface registerService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
         String token = loginService.login(request.getUsername(), request.getPassword());
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(Collections.singletonMap("token", token));
     }
+
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {

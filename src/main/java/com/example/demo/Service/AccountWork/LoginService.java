@@ -23,7 +23,7 @@ public class LoginService implements LoginInterface {
         Person person = repo.findByUsername(username);
 
         if (person == null || !passwordEncoder.matches(password, person.getPassword()) || !person.isActive()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
 
         return jwtService.generateToken(person.getUsername());

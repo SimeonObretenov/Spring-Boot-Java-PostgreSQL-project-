@@ -1,10 +1,10 @@
 package com.example.demo.Dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ResetPasswordRequest {
     private String username;
     private String newPassword;
