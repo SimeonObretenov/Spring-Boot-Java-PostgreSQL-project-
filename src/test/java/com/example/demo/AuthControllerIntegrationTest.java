@@ -2,6 +2,7 @@ package com.example.demo;
 
 import com.example.demo.Dto.LoginRequest;
 import com.example.demo.Dto.RegisterRequest;
+import com.example.demo.Dto.ResetPasswordRequest;
 import com.example.demo.Entity.Person;
 import com.example.demo.Entity.Role;
 import com.example.demo.Repository.ArticleRepository;
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -27,9 +29,7 @@ public class AuthControllerIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private PersonRepository personRepository;
-
-    @Autowired
-    private ArticleRepository articleRepository;
+    @Autowired private ArticleRepository articleRepository;
 
     @BeforeAll
     void clearDatabase() {
@@ -87,5 +87,89 @@ public class AuthControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Invalid username or password"));
+    }
+
+    @Test
+    void shouldResetPasswordSuccessfully() throws Exception {
+        RegisterRequest register = new RegisterRequest("resetUser", "oldpass", "Reset Guy");
+        mockMvc.perform(post("/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(register)))
+                .andExpect(status().isOk());
+
+        ResetPasswordRequest resetRequest = new ResetPasswordRequest("resetUser", "newpass");
+        mockMvc.perform(put("/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(resetRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Password has been reset successfully."));
+    }
+
+    @Test
+    void shouldDeactivateAndPreventLogin() throws Exception {
+        RegisterRequest register = new RegisterRequest("inactiveUser", "somepass", "Inactive Person");
+        mockMvc.perform(post("/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(register)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(put("/deactivate")
+                        .param("username", "inactiveUser")
+                        .param("password", "somepass"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User deactivated successfully"));
+
+        LoginRequest login = new LoginRequest("inactiveUser", "somepass");
+        mockMvc.perform(post("/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(login)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Invalid username or password"));
+    }
+
+    @Test
+    void shouldReactivateUserSuccessfully() throws Exception {
+        RegisterRequest register = new RegisterRequest("inactiveUser", "somepass", "Inactive Person");
+        mockMvc.perform(post("/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(register)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(put("/deactivate")
+                        .param("username", "inactiveUser")
+                        .param("password", "somepass"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(put("/reactivate")
+                        .param("username", "inactiveUser")
+                        .param("password", "somepass"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User reactivated successfully"));
+
+        LoginRequest login = new LoginRequest("inactiveUser", "somepass");
+        mockMvc.perform(post("/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(login)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").exists());
+    }
+
+
+    @Test
+    void shouldRejectResetPasswordForNonexistentUser() throws Exception {
+        ResetPasswordRequest reset = new ResetPasswordRequest("ghostUser", "whatever");
+
+        mockMvc.perform(put("/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reset)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldRejectReactivateWithWrongPassword() throws Exception {
+        mockMvc.perform(put("/reactivate")
+                        .param("username", "inactiveUser")
+                        .param("password", "wrongpass"))
+                .andExpect(status().isForbidden());
     }
 }
