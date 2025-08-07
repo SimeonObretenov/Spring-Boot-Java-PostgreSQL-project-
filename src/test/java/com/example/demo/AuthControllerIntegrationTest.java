@@ -1,12 +1,12 @@
 package com.example.demo;
 
-import com.example.demo.Dto.LoginRequest;
-import com.example.demo.Dto.RegisterRequest;
-import com.example.demo.Dto.ResetPasswordRequest;
-import com.example.demo.Entity.Person;
-import com.example.demo.Entity.Role;
-import com.example.demo.Repository.ArticleRepository;
-import com.example.demo.Repository.PersonRepository;
+import com.example.demo.dto.LoginRequest;
+import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.ResetPasswordRequest;
+import com.example.demo.entity.Person;
+import com.example.demo.entity.Role;
+import com.example.demo.repository.ArticleRepository;
+import com.example.demo.repository.PersonRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
