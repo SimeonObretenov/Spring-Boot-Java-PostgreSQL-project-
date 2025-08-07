@@ -1,5 +1,6 @@
 package com.example.demo.Service.ArticlesHelp;
 
+import com.example.demo.Dto.ArticleBlogResponse;
 import com.example.demo.Dto.ArticleCreateRequest;
 import com.example.demo.Dto.ArticleResponse;
 import com.example.demo.Entity.*;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -119,5 +121,27 @@ public class ArticleService implements ArticleInterface {
                 saved.getAuthor().getName(),
                 saved.getTags().stream().map(Tag::getName).collect(Collectors.toSet())
         );
+    }
+
+    @Override
+    public List<ArticleBlogResponse> getAllArticlesAsBlog() {
+        List<Article> articles = articleRepository.findAll();
+
+        return articles.stream().map(article -> {
+            String authorName = article.getAuthor().getName();
+
+            List<String> tags = article.getTags().stream()
+                    .map(Tag::getName)
+                    .toList();
+
+            List<String> categories = List.of(article.getCategory().getName());
+
+            return new ArticleBlogResponse(
+                    article.getTitle(),
+                    authorName,
+                    tags,
+                    categories
+            );
+        }).toList();
     }
 }

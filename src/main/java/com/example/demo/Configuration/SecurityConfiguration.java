@@ -43,6 +43,7 @@ public class SecurityConfiguration {
                                 "/v3/api-docs.yaml",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/articles/blog").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login", "/register").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/deactivate", "/reactivate", "/reset-password").permitAll()
                         .anyRequest().authenticated()
