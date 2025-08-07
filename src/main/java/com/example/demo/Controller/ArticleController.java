@@ -41,10 +41,12 @@ public class ArticleController {
     }
 
     @GetMapping("/blog")
-    @Operation(summary = "Get all blog articles", description = "Returns a list of all articles with title, author, tags, and category.")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved blog articles")
-    public ResponseEntity<List<ArticleBlogResponse>> getAllArticlesAsBlog() {
-        return ResponseEntity.ok(articleService.getAllArticlesAsBlog());
+    @Operation(summary = "Get paginated blog articles", description = "Returns blog articles, 10 per page.")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved paginated blog articles")
+    public ResponseEntity<List<ArticleBlogResponse>> getAllArticlesAsBlog(
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(articleService.getAllArticlesAsBlog(page));
     }
+
 
 }

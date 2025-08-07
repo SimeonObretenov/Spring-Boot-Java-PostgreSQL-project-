@@ -9,6 +9,8 @@ import com.example.demo.Repository.ArticleRepository;
 import com.example.demo.Repository.CategoryRepository;
 import com.example.demo.Repository.TagRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -124,8 +126,9 @@ public class ArticleService implements ArticleInterface {
     }
 
     @Override
-    public List<ArticleBlogResponse> getAllArticlesAsBlog() {
-        List<Article> articles = articleRepository.findAll();
+    public List<ArticleBlogResponse> getAllArticlesAsBlog(int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        List<Article> articles = articleRepository.findAll(pageable).getContent();
 
         return articles.stream().map(article -> {
             String authorName = article.getAuthor().getName();
