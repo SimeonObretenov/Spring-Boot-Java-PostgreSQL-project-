@@ -1,105 +1,80 @@
 package com.example.demo.configuration;
 
-import com.example.demo.entity.Person;
+import com.example.demo.interfaces.account_work.JwtInterface;
 import com.example.demo.repository.PersonRepository;
-import com.example.demo.service.account_work.JwtService;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.Collections;
+import org.springframework.security.web.context.NullSecurityContextRepository;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
-    private final JwtService jwtService;
+    private final JwtInterface jwtService;
     private final PersonRepository personRepository;
 
     @Bean
     public SecurityFilterChain customSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .securityContext(sc -> sc.securityContextRepository(new NullSecurityContextRepository()))
+                .httpBasic(b -> b.disable())
+                .formLogin(f -> f.disable())
+                .exceptionHandling(e -> e.authenticationEntryPoint(restAuthEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/swagger-ui.html",
                                 "/swagger-ui/**",
+                                "/v3/api-docs",
                                 "/v3/api-docs/**",
                                 "/v3/api-docs.yaml",
-                                "/swagger-ui.html"
+                                "/v3/api-docs/swagger-config",
+                                "/error"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/articles/blog").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login", "/register").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/deactivate", "/reactivate", "/reset-password").permitAll()
+
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthFilter(jwtService, personRepository), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    @Bean
+    public JwtAuthFilter jwtAuthFilter() {
+        return new JwtAuthFilter(jwtService, personRepository, restAuthEntryPoint());
+    }
+
+    @Bean
+    public AuthenticationEntryPoint restAuthEntryPoint() {
+        return (request, response, ex) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"unauthorized\"}");
+        };
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    static class JwtAuthFilter extends OncePerRequestFilter {
-
-        private final JwtService jwtService;
-        private final PersonRepository personRepository;
-
-        public JwtAuthFilter(JwtService jwtService, PersonRepository personRepository) {
-            this.jwtService = jwtService;
-            this.personRepository = personRepository;
-        }
-
-        @Override
-        protected void doFilterInternal(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        FilterChain filterChain) throws ServletException, IOException {
-            String path = request.getServletPath();
-
-            if (path.equals("/login") || path.equals("/register") ||
-                    path.equals("/reset-password") || path.equals("/articles/blog")) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            String authHeader = request.getHeader("Authorization");
-
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                String username = jwtService.extractUsername(token);
-
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    Person person = personRepository.findByUsername(username);
-                    if (person != null && person.isActive()) {
-                        UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(
-                                        person,
-                                        null,
-                                        Collections.emptyList()
-                                );
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                    }
-                }
-            }
-
-            filterChain.doFilter(request, response);
-        }
     }
 }

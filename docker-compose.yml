@@ -1,12 +1,23 @@
-version: '3.1'
+version: "3.8"
 
 services:
   db:
     image: postgres:15
     restart: always
+    container_name: demo-db-1
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: mydb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     ports:
       - "5432:5432"
+
+volumes:
+  pgdata:
