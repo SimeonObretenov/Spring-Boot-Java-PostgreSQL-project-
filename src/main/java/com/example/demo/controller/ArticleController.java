@@ -19,32 +19,25 @@ public class ArticleController {
 
     private final ArticleInterface articleService;
 
-    @PostMapping("/articles")
-    public ResponseEntity<ArticleResponse> createArticle(@RequestBody ArticleCreateRequest request) {
+    @PostMapping
+    public ResponseEntity<ArticleResponse> create(@RequestBody ArticleCreateRequest request) {
         return ResponseEntity.ok(articleService.createArticle(request));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteArticle(@PathVariable Long id) {
-        articleService.deleteArticle(id);
-        return ResponseEntity.noContent().build();
+    @PutMapping("/{id}")
+    public ResponseEntity<ArticleResponse> update(@PathVariable Long id,
+                                                  @RequestBody ArticleCreateRequest request) {
+        return ResponseEntity.ok(articleService.updateArticle(id, request));
     }
 
-    @PutMapping("/articles/{id}")
-    public ResponseEntity<ArticleResponse> updateArticle(
-            @PathVariable Long id,
-            @RequestBody ArticleCreateRequest request) {
-        ArticleResponse updated = articleService.updateArticle(id, request);
-        return ResponseEntity.ok(updated);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        articleService.deleteArticle(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/blog")
-    @Operation(summary = "Get paginated blog articles", description = "Returns blog articles, 10 per page.")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved paginated blog articles")
-    public ResponseEntity<List<ArticleBlogResponse>> getAllArticlesAsBlog(
-            @RequestParam(defaultValue = "0") int page) {
+    public ResponseEntity<List<ArticleBlogResponse>> blog(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(articleService.getAllArticlesAsBlog(page));
     }
-
-
 }
