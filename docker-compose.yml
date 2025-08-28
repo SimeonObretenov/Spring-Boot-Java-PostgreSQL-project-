@@ -1,10 +1,8 @@
-version: "3.8"
-
 services:
   db:
     image: postgres:15
-    restart: always
     container_name: demo-db-1
+    restart: always
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
@@ -17,7 +15,6 @@ services:
       timeout: 3s
       retries: 10
     ports:
-      - "5432:5432"
-
+      - "15432:5432"   # host:container
 volumes:
   pgdata:

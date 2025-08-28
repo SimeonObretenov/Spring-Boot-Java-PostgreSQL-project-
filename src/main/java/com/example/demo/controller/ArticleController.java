@@ -1,43 +1,86 @@
-package com.example.demo.controller;
+    package com.example.demo.controller;
 
-import com.example.demo.dto.ArticleBlogResponse;
-import com.example.demo.dto.ArticleCreateRequest;
-import com.example.demo.dto.ArticleResponse;
-import com.example.demo.interfaces.articles_help.ArticleInterface;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+    import com.example.demo.dto.ArticleBlogResponse;
+    import com.example.demo.dto.ArticleCreateRequest;
+    import com.example.demo.dto.ArticleResponse;
+    import com.example.demo.interfaces.articles_help.ArticleCreatorInterface;
+    import com.example.demo.interfaces.articles_help.ArticleDeletionInterface;
+    import com.example.demo.interfaces.articles_help.ArticleEditorInterface;
+    import com.example.demo.interfaces.articles_help.ArticleReaderInterface;
+    import io.swagger.v3.oas.annotations.Operation;
+    import io.swagger.v3.oas.annotations.responses.ApiResponse;
+    import io.swagger.v3.oas.annotations.responses.ApiResponses;
+    import jakarta.validation.Valid;
+    import lombok.RequiredArgsConstructor;
+    import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+    import java.util.List;
 
-@RestController
-@RequestMapping("/articles")
-@RequiredArgsConstructor
-public class ArticleController {
+    @RestController
+    @RequestMapping("/api/articles")
+    @RequiredArgsConstructor
+    public class ArticleController {
 
-    private final ArticleInterface articleService;
+        private final ArticleCreatorInterface creator;
+        private final ArticleReaderInterface reader;
+        private final ArticleEditorInterface updater;
+        private final ArticleDeletionInterface deleter;
 
-    @PostMapping
-    public ResponseEntity<ArticleResponse> create(@RequestBody ArticleCreateRequest request) {
-        return ResponseEntity.ok(articleService.createArticle(request));
+        @Operation(summary = "Create a new article",
+                description = "Creates a new article with title, content, category, and optional tags")
+        @ApiResponses({
+                @ApiResponse(responseCode = "200", description = "Article successfully created"),
+                @ApiResponse(responseCode = "400", description = "Invalid input data"),
+                @ApiResponse(responseCode = "403", description = "Not authorized to create")
+        })
+        @PostMapping
+        public ArticleResponse create(@RequestBody @Valid ArticleCreateRequest req) {
+            return creator.create(req);
+        }
+
+        @Operation(summary = "List articles (blog view)",
+                description = "Lists all articles with pagination, showing author, tags, and categories")
+        @ApiResponse(responseCode = "200", description = "List retrieved successfully")
+        @GetMapping
+        public List<ArticleBlogResponse> list(@RequestParam(defaultValue = "0") int page) {
+            return reader.listBlog(page);
+        }
+
+        @Operation(summary = "Get one article",
+                description = "Fetches full article details (title, content, category, tags, author) by ID")
+        @ApiResponses({
+                @ApiResponse(responseCode = "200", description = "Article found"),
+                @ApiResponse(responseCode = "404", description = "Article not found")
+        })
+        @GetMapping("/{id}")
+        public ArticleResponse getOne(@PathVariable Long id) {
+            return reader.getOne(id);
+        }
+
+        @Operation(summary = "Update an article",
+                description = "Updates title, content, category, and tags of an existing article. "
+                        + "Requires WRITE permission (enforced in the service layer).")
+        @ApiResponses({
+                @ApiResponse(responseCode = "200", description = "Article successfully updated"),
+                @ApiResponse(responseCode = "403", description = "Not allowed to update this article"),
+                @ApiResponse(responseCode = "404", description = "Article not found")
+        })
+        @PutMapping("/{id}")
+        public ArticleResponse update(@PathVariable Long id,
+                                      @RequestBody @Valid ArticleCreateRequest req) {
+            return updater.update(id, req);
+        }
+
+        @Operation(summary = "Delete an article",
+                description = "Deletes an article by ID. Requires DELETE permission "
+                        + "(enforced in the deletion service layer).")
+        @ApiResponses({
+                @ApiResponse(responseCode = "200", description = "Article successfully deleted"),
+                @ApiResponse(responseCode = "403", description = "Not allowed to delete this article"),
+                @ApiResponse(responseCode = "404", description = "Article not found")
+        })
+        @DeleteMapping("/{id}")
+        public void delete(@PathVariable Long id) {
+            deleter.delete(id);
+        }
     }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ArticleResponse> update(@PathVariable Long id,
-                                                  @RequestBody ArticleCreateRequest request) {
-        return ResponseEntity.ok(articleService.updateArticle(id, request));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        articleService.deleteArticle(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/blog")
-    public ResponseEntity<List<ArticleBlogResponse>> blog(@RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(articleService.getAllArticlesAsBlog(page));
-    }
-}
