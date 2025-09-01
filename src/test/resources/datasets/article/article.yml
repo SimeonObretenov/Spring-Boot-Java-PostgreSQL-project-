@@ -1,0 +1,11 @@
+article:
+  - id: 1
+    title: "First Article"
+    content: "This is the first test dzdsaad"
+    category_id: 1
+    author_id: 1
+  - id: 2
+    title: "Second Article"
+    content: "Another one"
+    category_id: 1
+    author_id: 1

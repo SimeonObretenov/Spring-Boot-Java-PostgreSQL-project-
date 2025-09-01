@@ -1,0 +1,4 @@
+acl_sid:
+  - id: 1
+    principal: true
+    sid: "moni" # username

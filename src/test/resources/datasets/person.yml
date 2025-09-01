@@ -1,0 +1,7 @@
+person:
+  - id: 1
+    name: "Moni Test"
+    username: "moni"
+    password: "$2a$12$ySg2zFhemdHsOiCQcScDVuTIesc3qnzTfEQ3pMQvEGkDMtDnc4ePy" # bcrypt("moni")
+    role: "USER"
+    active: true

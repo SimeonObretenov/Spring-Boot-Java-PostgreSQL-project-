@@ -8,6 +8,7 @@ import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.core.env.Environment;
 import org.springframework.security.acls.domain.*;
 import org.springframework.security.acls.jdbc.BasicLookupStrategy;
 import org.springframework.security.acls.jdbc.JdbcMutableAclService;
@@ -64,12 +65,24 @@ public class AclConfig {
     }
 
     @Bean
-    public JdbcMutableAclService aclService(DataSource dataSource,
-                                            LookupStrategy lookupStrategy,
-                                            AclCache aclCache) {
+    public JdbcMutableAclService aclService(
+            DataSource dataSource,
+            LookupStrategy lookupStrategy,
+            AclCache aclCache,
+            Environment env) {
+
         JdbcMutableAclService svc = new JdbcMutableAclService(dataSource, lookupStrategy, aclCache);
-        svc.setClassIdentityQuery("select currval(pg_get_serial_sequence('acl_class','id'))");
-        svc.setSidIdentityQuery("select currval(pg_get_serial_sequence('acl_sid','id'))");
+
+        if (env.acceptsProfiles("test")) {
+            svc.setClassIdentityQuery("select max(id) from acl_class");
+            svc.setSidIdentityQuery("select max(id) from acl_sid");
+        } else {
+            svc.setClassIdentityQuery("select currval(pg_get_serial_sequence('acl_class','id'))");
+            svc.setSidIdentityQuery("select currval(pg_get_serial_sequence('acl_sid','id'))");
+        }
+
         return svc;
     }
+
+
 }

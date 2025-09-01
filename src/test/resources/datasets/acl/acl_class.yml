@@ -1,0 +1,3 @@
+acl_class:
+  - id: 1
+    class: "com.example.demo.entity.Article"

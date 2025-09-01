@@ -47,6 +47,7 @@ public class SecurityConfiguration {
                                 "/error"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/articles/blog").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login", "/register").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/deactivate", "/reactivate", "/reset-password").permitAll()
 

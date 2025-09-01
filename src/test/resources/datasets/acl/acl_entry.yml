@@ -1,0 +1,9 @@
+acl_entry:
+  - id: 1
+    acl_object_identity: 1
+    ace_order: 0
+    sid: 1
+    mask: 2   # WRITE permission
+    granting: true
+    audit_success: false
+    audit_failure: false

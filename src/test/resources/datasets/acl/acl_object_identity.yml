@@ -1,0 +1,7 @@
+acl_object_identity:
+  - id: 1
+    object_id_class: 1
+    object_id_identity: 1   # Article ID
+    parent_object: null
+    owner_sid: 1
+    entries_inheriting: true
