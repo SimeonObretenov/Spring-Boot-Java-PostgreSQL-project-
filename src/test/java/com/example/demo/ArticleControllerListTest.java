@@ -9,6 +9,7 @@ import org.springframework.http.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// testing fixtures - not a great idea
 class ArticleControllerListTest extends AbstractIntegrationTest {
 
     @LocalServerPort
@@ -37,6 +38,5 @@ class ArticleControllerListTest extends AbstractIntegrationTest {
         assertThat(body).contains("Tech");
         assertThat(body).contains("Spring");
         assertThat(body).contains("Java");
-
     }
 }
