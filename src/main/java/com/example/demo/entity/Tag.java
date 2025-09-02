@@ -1,9 +1,15 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 public class Tag {
 
@@ -15,20 +21,6 @@ public class Tag {
     private String name;
 
     @ManyToMany(mappedBy = "tags")
+    @Builder.Default
     private Set<Article> articles = new HashSet<>();
-
-    public Tag() {}
-
-    public Tag(String name) {
-        this.name = name;
-    }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public Set<Article> getArticles() { return articles; }
-    public void setArticles(Set<Article> articles) { this.articles = articles; }
 }

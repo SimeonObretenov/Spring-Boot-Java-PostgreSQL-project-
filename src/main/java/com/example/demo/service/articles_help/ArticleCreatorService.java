@@ -54,7 +54,12 @@ public class ArticleCreatorService implements ArticleCreatorInterface {
                 ? tagRepo.findByIdIn(request.getTagIds())
                 : Collections.emptySet();
 
-        var article = new Article(request.getTitle(), request.getContent(), category, author);
+        var article = Article.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .category(category)
+                .author(author)
+                .build();
         article.setTags(tags);
         var saved = articleRepo.save(article);
 
