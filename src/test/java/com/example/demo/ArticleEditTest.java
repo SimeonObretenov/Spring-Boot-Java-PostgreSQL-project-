@@ -1,12 +1,8 @@
 package com.example.demo;
 
-import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.ArticleCreateRequest;
 import com.github.database.rider.core.api.dataset.DataSet;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 
 import java.util.Set;
@@ -14,27 +10,6 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ArticleEditTest extends AbstractIntegrationTest {
-
-    @LocalServerPort
-    private int port;
-
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-    private String loginAndGetToken() {
-        String loginUrl = "http://localhost:" + port + "/login";
-        LoginRequest req = new LoginRequest("moni", "moni");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        ResponseEntity<String> resp =
-                restTemplate.postForEntity(loginUrl, new HttpEntity<>(req, headers), String.class);
-
-        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
-        String token = resp.getBody();
-        return token.replace("{\"token\":\"", "").replace("\"}", "");
-    }
 
     @Test
     @DataSet({
@@ -49,7 +24,7 @@ class ArticleEditTest extends AbstractIntegrationTest {
             "datasets/acl/acl_entry.yml"
     })
     void userCanEditArticle() {
-        String token = loginAndGetToken();
+        String token = loginAs("moni", "moni");
 
         String url = "http://localhost:" + port + "/api/articles/1";
         ArticleCreateRequest editReq = new ArticleCreateRequest(
@@ -59,12 +34,8 @@ class ArticleEditTest extends AbstractIntegrationTest {
                 Set.of(1L, 2L)
         );
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(token);
-
         ResponseEntity<String> response =
-                restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(editReq, headers), String.class);
+                restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(editReq, authorizedHeaders(token)), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).contains("Updated Title");
@@ -86,7 +57,7 @@ class ArticleEditTest extends AbstractIntegrationTest {
             "datasets/acl/acl_entry.yml"
     })
     void editingNonExistingArticleReturns404() {
-        String token = loginAndGetToken();
+        String token = loginAs("moni", "moni");
 
         String url = "http://localhost:" + port + "/api/articles/999";
         ArticleCreateRequest editReq = new ArticleCreateRequest(
@@ -96,12 +67,8 @@ class ArticleEditTest extends AbstractIntegrationTest {
                 Set.of(1L)
         );
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(token);
-
         ResponseEntity<String> response =
-                restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(editReq, headers), String.class);
+                restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(editReq, authorizedHeaders(token)), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
