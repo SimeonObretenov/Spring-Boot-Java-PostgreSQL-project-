@@ -13,7 +13,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ArticleControllerTest extends AbstractIntegrationTest {
+class ArticleCreationTest extends AbstractIntegrationTest {
 
     @LocalServerPort
     private int port;
