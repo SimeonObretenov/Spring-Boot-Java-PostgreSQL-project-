@@ -5,13 +5,14 @@ import com.example.demo.dto.ArticleResponse;
 import com.example.demo.entity.Tag;
 import com.example.demo.interfaces.articles_help.ArticleReaderInterface;
 import com.example.demo.repository.ArticleRepository;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,20 +29,30 @@ public class ArticleReaderService implements ArticleReaderInterface {
                 .map(a -> new ArticleBlogResponse(
                         a.getTitle(),
                         a.getAuthor().getName(),
-                        a.getTags().stream().map(Tag::getName).toList(),
+                        new ArrayList<>(a.getTags())
+                                .stream()
+                                .map(Tag::getName)
+                                .toList(),
                         List.of(a.getCategory().getName())
-                )).toList();
+                ))
+                .toList();
     }
 
     @Override
     public ArticleResponse getOne(Long articleId) {
         var a = articleRepo.findById(articleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Article not found"));
+
         return new ArticleResponse(
-                a.getId(), a.getTitle(), a.getContent(),
-                a.getCategory().getName(), a.getAuthor().getName(),
-                a.getTags().stream().map(Tag::getName).collect(Collectors.toSet())
+                a.getId(),
+                a.getTitle(),
+                a.getContent(),
+                a.getCategory().getName(),
+                a.getAuthor().getName(),
+                new ArrayList<>(a.getTags())
+                        .stream()
+                        .map(Tag::getName)
+                        .collect(Collectors.toSet())
         );
     }
 }
-
